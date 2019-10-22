@@ -225,7 +225,7 @@ class dbBuilder {
     );
     return {
       code: 200,
-      message: "ER-diagram is created successfully\nOpen ./Db/table.html"
+      message: "ER-diagram is created successfully"
     };
   }
   static getTables() {

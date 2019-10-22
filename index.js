@@ -9,7 +9,7 @@ const DBRepository = require("./repository/db.repository.js");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.get("/", function(req, res) {
-  res.sendFile(`${__dirname}/sendFiles/index.html`);
+  res.sendFile(`${__dirname}/index.html`);
 });
 
 app.get("/homedir/", (req, res) => {
@@ -34,7 +34,6 @@ app.get("/tables/", (req, res) => {
 });
 
 app.post("/save/coordinates/", function(req, res) {
-  console.log(req.body);
   DBRepository.saveCoords(req.body.coords);
   res.send("Ok");
 });
