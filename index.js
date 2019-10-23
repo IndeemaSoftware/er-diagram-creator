@@ -13,7 +13,8 @@ app.get("/", function(req, res) {
 });
 
 app.get("/homedir/", (req, res) => {
-  res.send(homedir);
+  let directories = DBRepository.getHomeDirectories(homedir);
+  res.send({ homedir, directories});
 });
 
 app.post("/create/fileSystem/", function(req, res) {
@@ -35,7 +36,6 @@ app.get("/tables/", (req, res) => {
 
 app.post("/save/coordinates/", function(req, res) {
   DBRepository.saveCoords(req.body.coords);
-  res.send("Ok");
 });
 app.get("/coordinates/", function(req, res) {
   let coordinates = DBRepository.getCoordinates();

@@ -30,48 +30,110 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
   </head>
   <body>
-    <label for="path" style="font-size : 1.5; margin-bottom : 50px">
-      Enter full path to your project
-      <input type="text" name="path" id="path" />
-    </label>
-    <button type = "button" class = "btn btn-secondary" id="sendPath">Submit</button>
-
+    <div class="container">
+      <form class="form-inline mt-2" action="">
+        <label for="path" class="mb-2 mr-sm-2"
+          >Enter full path to your project</label
+        >
+        <input
+          type="text"
+          class="form-control mb-2 mr-sm-2"
+          id="path"
+          name="path"
+        />
+        <button
+          type="button"
+          class="btn btn-secondary mb-2 mr-sm-2"
+          id="sendPath"
+        >
+          Submit
+        </button>
+      </form>
+      <div class="list-group" id="homeDirectoriesList"></div>
+    </div>
     <div id="fileSystem" style="display: none;">
       <div
+        class="container"
         id="root"
-        style=" height : 400px; width : 400px; margin : 0 auto; overflow:scroll; cursor: default; margin-top: 50px"
+        style=" height : 400px; width : 500px; margin : 50px auto; overflow-y:scroll; overflow-x : hidden;; cursor: default;"
       ></div>
-      <label for="extention" style="font-size : 1.5; margin-bottom : 50px">
-        Select project
-        <input type="text" name="project" id="project" value="" />
-      </label>
-      <label for="extention" style="font-size : 1.5; margin-bottom : 50px">
-        Select all by extentions
-        <input type="text" name="extention" id="extention" value=".model.js" />
-        <button id="selectByExtention">Select</button>
-      </label>
       <div class="container">
-        <h2>List Group With Linked Items</h2>
-        <div class="list-group">
-          <a href="#" class="list-group-item list-group-item-action">First item</a>
-          <a href="#" class="list-group-item list-group-item-action">Second item</a>
-          <a href="#" class="list-group-item list-group-item-action">Third item</a>
-        </div>
+        <form class="form-inline mt-2" action="">
+          <label
+            for="extention"
+            class="mb-2 mr-sm-2"
+            style="font-size : 1.5; margin-bottom : 50px"
+          >
+            Select project</label
+          >
+          <input
+            type="text"
+            class="form-control mb-2 mr-sm-2"
+            name="project"
+            id="project"
+            value=""
+          />
+
+          <label
+            for="extention"
+            class="mb-2 mr-sm-2"
+            style="font-size : 1.5; margin-bottom : 50px"
+          >
+            Select all by extentions
+          </label>
+          <input
+            type="text"
+            class="form-control mb-2 mr-sm-2"
+            name="extention"
+            id="extention"
+            value=".model.js"
+          />
+          <button
+            type="button"
+            class="btn btn-secondary mb-2 mr-sm-2"
+            id="selectByExtention"
+          >
+            Select
+          </button>
+        </form>
       </div>
-      <ul id="list" style="list-style: none"></ul>
-      <br />
-      <button id="sendFiles">Send files</button>
+
+      <div class="container">
+        <h3>Selected models</h3>
+        <div class="list-group" id="list"></div>
+        <button class="btn btn-secondary mb-2 mr-sm-2 mt-2" id="sendFiles">
+          Send files
+        </button>
+      </div>
     </div>
     <script>
+      let homeDirectories = [];
       window.onload = function() {
         getHomeDirectory();
+        path.addEventListener("input", createDirectoriesList);
+        homeDirectoriesList.addEventListener("click", function(e){
+          path.value = e.target.innerHTML;
+        });
         sendFiles.addEventListener("click", sendFilesList);
         sendPath.addEventListener("click", sendPathToProject);
 
         selectByExtention.addEventListener("click", addSelectedFiles);
-      };
 
+       
+      };
+      function createDirectoriesList() {
+        homeDirectoriesList.innerHTML = "";
+        homeDirectories
+          .filter(elem => elem.startsWith(path.value))
+          .forEach(elem => {
+            let a = document.createElement("a");
+            a.setAttribute("class", "list-group-item list-group-item-action");
+            a.innerHTML = elem;
+            homeDirectoriesList.append(a);
+          });
+      }
       function sendPathToProject() {
+        homeDirectoriesList.innerHTML = "";
         root.innerHTML = "";
         if (path.value) {
           $.ajax({
@@ -207,13 +269,15 @@
           url: "http://localhost:8081/homedir/",
           contentType: "application/json; charset=utf-8",
           success: function(data, err) {
-            path.value = `${data}/`;
+            homeDirectories = data.directories;
+            path.value = `${data.homedir}/`;
+            createDirectoriesList();
           }
         });
       }
 
       function sendFilesList() {
-        let list = document.getElementsByTagName("li");
+        let list = document.getElementsByClassName("list-group-item");
         let paths = [];
         if (!list.length) {
           alert("No files");
@@ -243,18 +307,23 @@
         if (listItem.target) listItem = listItem.target.id;
         if ([...list.children].some(child => child.id === listItem)) return; //список не повинен містити однакових файлів
         if (listItem.endsWith(".js") || listItem.endsWith(".json")) {
-          let li = document.createElement("li");
-          li.id = listItem;
+          let a = document.createElement("a");
+          a.setAttribute("class", "list-group-item list-group-item-action");
+          a.id = listItem;
           let button = document.createElement("button");
+          button.setAttribute(
+            "class",
+            "btn btn-outline-secondary btn-sm ml-1 mr-1"
+          );
           button.innerHTML = "Del";
           let idForDelete = listItem;
           button.addEventListener("click", function() {
             let elemforRemove = document.getElementById(idForDelete);
             event.target.parentElement.remove();
           });
-          li.appendChild(button);
-          li.appendChild(document.createTextNode(`  ${listItem}`));
-          list.appendChild(li);
+          a.appendChild(button);
+          a.appendChild(document.createTextNode(`  ${listItem}`));
+          list.appendChild(a);
         }
       }
       function getPathsbyExtention(extention, structureObject) {
@@ -274,6 +343,7 @@
       }
 
       function findStructure(path, structureObject) {
+        if (!path) return;
         let result;
         let search = (path, structureObject) => {
           for (let i = 0; i < structureObject.length; i++) {
@@ -293,6 +363,16 @@
       }
       function addSelectedFiles() {
         let selectedStructure = [findStructure(project.value, structureObject)];
+        if (!project.value) {
+          alert("Enter path to project");
+          project.focus();
+          return;
+        }
+        if (!extention.value) {
+          alert("Enter extention");
+          extention.focus();
+          return;
+        }
         let links = getPathsbyExtention(extention.value, selectedStructure);
         links.forEach(appendFileToList);
       }

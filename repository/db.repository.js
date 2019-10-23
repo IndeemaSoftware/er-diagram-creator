@@ -2,6 +2,12 @@ const fs = require("fs");
 const dataObjectParser = require("dataobject-parser");
 const R = require("ramda");
 class dbBuilder {
+  static getHomeDirectories(path) {
+    return fs
+      .readdirSync(path)
+      .filter(name => fs.lstatSync(`${path}/${name}`).isDirectory())
+      .map(elem => `${path}/${elem}/`);
+  }
   static createFileSystem(path) {
     let filesSystem = [];
     try {
@@ -242,7 +248,7 @@ class dbBuilder {
       JSON.stringify(coordinates),
       e => e
     );
-    return;
+    return "Diagram is saved";
   }
   static getCoordinates() {
     let coordinates;

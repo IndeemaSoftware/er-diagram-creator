@@ -5,9 +5,16 @@
     <title>ER</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
-
+  <link
+    rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+  />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
   <body>
-    <button id="save">Save</button>
+    <button type="button" class="btn btn-secondary ml-3 mr-sm-2 mt-3" id="save">
+      Save
+    </button>
     <div id="sample"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.26.1/ramda.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
@@ -16,9 +23,7 @@
       window.onload = () => {
         getTables();
         setCoordinates();
-        
-        
-        
+
         function getTables() {
           $.ajax({
             type: "GET",
@@ -204,21 +209,15 @@
             var node = it.value;
             coordinates.push({ x: node.location.x, y: node.location.y });
           }
-          console.log("************", coordinates);
+          console.log("Here");
           $.ajax({
             type: "POST",
             url: "http://localhost:8081/save/coordinates/",
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             data: JSON.stringify({ coords: coordinates }),
-            success: function(data, err) {
-              if (data.code === 500) {
-                alert(data.message);
-              } else {
-                alert(data.message);
-              }
-            }
           });
+          alert("Saved");
         }
       };
     </script>
