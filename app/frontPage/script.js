@@ -1,36 +1,45 @@
 let homeDirectories = [];
 window.onload = function() {
   getHomeDirectory();
-  path.addEventListener("input", function(e){ createDirectoriesList(e)});
+  path.addEventListener("input", function(e) {
+    createDirectoriesList(e);
+  });
   homeDirectoriesList.addEventListener("click", function(e) {
     path.value = e.target.innerHTML;
   });
-  deleteAll.addEventListener("click", function(){
-    $("#list").hide(1000, function(){
+  deleteAll.addEventListener("click", function() {
+    $("#list").hide(1000, function() {
       list.innerHTML = "";
       list.style.display = "block";
     });
-  })
+  });
   sendFiles.addEventListener("click", sendFilesList);
   sendPath.addEventListener("click", sendPathToProject);
   selectByExtention.addEventListener("click", addSelectedFiles);
   edit.addEventListener("click", editDiagram);
 };
+
+/**
+ *  create list of directroies in homeDirectry
+ *  @param {object} event
+ */
 function createDirectoriesList(event) {
   homeDirectoriesList.innerHTML = "";
-  let similars = homeDirectories
-    .filter(elem => elem.startsWith(path.value));
-    if(similars.length === 1 && R.path(["data"], event)!=null) {
-      path.value = similars[0];
-      similars = [];
-    }
-    similars.forEach(elem => {
-      let a = document.createElement("a");
-      a.setAttribute("class", "list-group-item list-group-item-action");
-      a.innerHTML = elem;
-      homeDirectoriesList.append(a);
-    });
+  let similars = homeDirectories.filter(elem => elem.startsWith(path.value));
+  if (similars.length === 1 && R.path(["data"], event) != null) {
+    path.value = similars[0];
+    similars = [];
+  }
+  similars.forEach(elem => {
+    let a = document.createElement("a");
+    a.setAttribute("class", "list-group-item list-group-item-action");
+    a.innerHTML = elem;
+    homeDirectoriesList.append(a);
+  });
 }
+/**
+ *  get path to file from input and send it to server
+ */
 function sendPathToProject() {
   homeDirectoriesList.innerHTML = "";
   root.innerHTML = "";
@@ -54,7 +63,10 @@ function sendPathToProject() {
     alert("Enter path correctly");
   }
 }
-
+/**
+ *  clean list and make fileSystem visible
+ *  @param {object} structure - object with files and directories
+ */
 function createSystem(structure) {
   structureObject = structure;
   list.innerHTML = "";
@@ -63,7 +75,11 @@ function createSystem(structure) {
   rootNode.appendChild(createFolderTree(structure));
   rootNode.ondblclick = appendFileToList;
 }
-
+/**
+ *  draw file system in browser
+ *  @param {array} arr - array with files and directories
+ *  @returns {object} - document object
+ */
 function createFolderTree(arr, depth) {
   if (typeof depth === "number") depth++;
   else depth = 1;
@@ -76,10 +92,7 @@ function createFolderTree(arr, depth) {
     div.style.paddingLeft = "15px";
     div.addEventListener("click", function() {
       if (
-        !(
-          event.target.id.endsWith(".js") ||
-          event.target.id.endsWith(".json")
-        )
+        !(event.target.id.endsWith(".js") || event.target.id.endsWith(".json"))
       ) {
         project.value = event.target.id;
         project.focus();
@@ -110,7 +123,10 @@ function createFolderTree(arr, depth) {
   }
   return structure;
 }
-
+/**
+ *  if parent folder is closed, all descendant should also be closed
+ *  @param {array} arr - array with files and directories
+ */
 function none(arr) {
   for (let i = 1; i < arr.length; i++) {
     if (arr[i].children.length != 0) {
@@ -119,16 +135,29 @@ function none(arr) {
     arr[i].style.display = "none";
   }
 }
+/**
+ *  if parent folder is opened, all descendant should also be visible
+ *  @param {array} arr - array with files and directories
+ */
 function block(arr) {
   arr[0].style.display = "inline";
   for (let i = 1; i < arr.length; i++) {
     arr[i].style.display = "block";
   }
 }
+
+/**
+ *  check object field folder
+ *  @returns {boolean}
+ */
+
 function isFolder(folder) {
   if (folder.folder) return true;
 }
-
+/**
+ *  append icons to files and folders
+ *  @returns {object} image
+ */
 function createIcon(elem) {
   let img = document.createElement("img");
 
@@ -145,13 +174,21 @@ function createIcon(elem) {
 
   return img;
 }
+/**
+ * append icons to files and folders
+ * @param {object} elem - elem i have been recently clicking
+ * @returns {str} changed image (opened folder)
+ */
 
 function openedFolderIcon(elem) {
   let img = elem.firstChild;
-  img.src =
-    "https://img.icons8.com/cute-clipart/64/000000/opened-folder.png";
+  img.src = "https://img.icons8.com/cute-clipart/64/000000/opened-folder.png";
 }
-
+/**
+ * append icons to files and folders
+ * @param {object} elem - elem i have been recently clicking
+ * @returns {str} changed image (closed folder)
+ */
 function closedFolderIcon(elem) {
   for (let i = 0; i < elem.children.length; i++) {
     if (elem.children[i].children.length > 1) {
@@ -162,7 +199,9 @@ function closedFolderIcon(elem) {
     }
   }
 }
-
+/**
+ *  send request to server. Receive home directory name and directories in this directory
+ */
 function getHomeDirectory() {
   $.ajax({
     type: "GET",
@@ -175,7 +214,9 @@ function getHomeDirectory() {
     }
   });
 }
-
+/**
+ * get data from list and send it to server
+ */
 function sendFilesList() {
   let list = document.getElementsByClassName("list-group-item");
   let paths = [];
@@ -202,22 +243,23 @@ function sendFilesList() {
     });
   }
 }
-function editDiagram(){
+/**
+ * make request for edit savedDiagram
+ */
+function editDiagram() {
   $.ajax({
     type: "PUT",
     url: "http://localhost:8081/edit/diagram/",
     contentType: "application/json; charset=utf-8",
     success: function(data, err) {
-      //if (data.code === 500) {
-        //alert(data.message);
-      //} else {
-        //alert(data.message);
-        window.open("http://localhost:8081/diagram/", "_blank", "");
-      //}
+      window.open("http://localhost:8081/diagram/", "_blank", "");
     }
   });
 }
-
+/**
+ * append item to filesList
+ * @param {string} listItem
+ */
 function appendFileToList(listItem) {
   if (listItem.target) listItem = listItem.target.id;
   if ([...list.children].some(child => child.id === listItem)) return; //список не повинен містити однакових файлів
@@ -226,10 +268,7 @@ function appendFileToList(listItem) {
     a.setAttribute("class", "list-group-item list-group-item-action");
     a.id = listItem;
     let button = document.createElement("button");
-    button.setAttribute(
-      "class",
-      "btn btn-outline-secondary btn-sm ml-1 mr-1"
-    );
+    button.setAttribute("class", "btn btn-outline-secondary btn-sm ml-1 mr-1");
     button.innerHTML = "Del";
     let idForDelete = listItem;
     button.addEventListener("click", function() {
@@ -241,6 +280,12 @@ function appendFileToList(listItem) {
     list.appendChild(a);
   }
 }
+/**
+ * get all paths from project by extention
+ * @param {string} extention
+ * @param {object} structureObject - object with files and directories
+ * @returns {array} all links from project with passed extantion
+ */
 function getPathsbyExtention(extention, structureObject) {
   let links = [];
   for (let i = 0; i < structureObject.length; i++) {
@@ -256,6 +301,12 @@ function getPathsbyExtention(extention, structureObject) {
   }
   return links;
 }
+/**
+ * find selected structure by path from structureObject
+ * @param {string} path - path to selected Project
+ * @param {object} structureObject - object with files and directories
+ * @returns {object} - selected part from structureObject
+ */
 
 function findStructure(path, structureObject) {
   if (!path) return;
@@ -276,6 +327,9 @@ function findStructure(path, structureObject) {
   search(path, structureObject);
   return result;
 }
+/**
+ * append all files with equal extention to specified in selected input
+ */
 function addSelectedFiles() {
   let selectedStructure = [findStructure(project.value, structureObject)];
   if (!project.value) {

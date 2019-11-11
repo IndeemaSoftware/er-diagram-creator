@@ -4,12 +4,27 @@ const R = require("ramda");
 const path = require("path");
 
 class dbBuilder {
+  /**
+   * get all folders from user directory
+   *
+   * @param {string} path - path to user home directory
+   * @returns {Array} array with pathes to every directory
+   */
+
   static getHomeDirectories(path) {
     return fs
       .readdirSync(path)
       .filter(name => fs.lstatSync(`${path}/${name}`).isDirectory())
       .map(elem => `${path}/${elem}/`);
   }
+
+  /**
+   * create custom fileSystem
+   *
+   * @param {string} path - path to user home directory
+   * @returns {Array} array with pathes to every directory and file
+   */
+
   static createFileSystem(path) {
     let filesSystem = [];
     try {
@@ -19,6 +34,15 @@ class dbBuilder {
       return e;
     }
   }
+
+  /**
+   * get files from directroy
+   *
+   * @param {string} path - path to user home directory
+   * @param {object} fileObject - object with files and folders
+   * @returns {Array} array with pathes to every directory and file
+   */
+
   static getFiles(path, fileObject) {
     let filesAndFolders = [];
 
@@ -49,6 +73,14 @@ class dbBuilder {
         })
     );
   }
+  /**
+   * take schema object data and build table object
+   * table object is appended to tables array
+   * @param {object} schema - model schema
+   * @param {string} name - models name
+   * @param {boolean} isMain - is model required or extracted from parent model
+   * @param {object} model - parent model
+   */
   static parseModel(schema, name, isMain = false, model = null) {
     let table = { name, children: [], data: [], isMain };
     if (R.path(["discriminators"], model))
@@ -83,9 +115,14 @@ class dbBuilder {
       dbBuilder.parseNestedCollection(table, nestedData.data());
     dbBuilder.tables.push(table);
   }
+  /**
+   * add to every table links created by discriminator
+   *
+   * @param {array} modelsWithDiscriminators - array with tables which have this links
+   * @param {array} tables - all tables
+   */
   static appendDiscriminators(modelsWithDiscriminators, tables) {
     let tableNames = tables.map(table => table.name);
-    console.log(tableNames);
     modelsWithDiscriminators.forEach(model => {
       let discriminators = model.model.discriminators;
       for (let field in discriminators) {
@@ -103,6 +140,13 @@ class dbBuilder {
       }
     });
   }
+  /**
+   * add to  child to main Table, set connection
+   *
+   * @param {object} table - parent table
+   * @param {string} fieldName - name of child
+   * @param {object} filedValue - child table data
+   */
   static appendMongooseDocument(table, fieldName, filedValue) {
     table.data.push({ fieldName, type: `table[ ${fieldName} ]` });
 
@@ -123,6 +167,13 @@ class dbBuilder {
   static appendField(table, fieldName, type) {
     table.data.push({ fieldName, type });
   }
+  /**
+   * set connection between current table and table specified in ref
+   *
+   * @param {object} table - parent table
+   * @param {string} fieldName - name of child
+   * @param {object} filedValue - child table data
+   */
   static appendLink(table, fieldName, fieldValue) {
     table.children.push({
       name: fieldValue,
@@ -130,7 +181,14 @@ class dbBuilder {
     });
     table.data.push({ fieldName: fieldName, type: `table[ ${fieldValue} ]` });
   }
-
+  /**
+   * find the most similar word in array to specified word
+   *
+   * @param {object} table - parent table
+   * @param {string} str - searching in mas by this variable
+   * @param {array} mas - tables name array
+   * @returns {string} - the most similar word in array to str
+   */
   static theMostSimilar(str, mas) {
     let counts = mas.map(elem => {
       let word = elem.toLowerCase();
@@ -150,6 +208,14 @@ class dbBuilder {
     });
     return Math.abs(max - str.length) > 3 ? null : best;
   }
+
+  /**
+   * parse model fields which contain . in name
+   *
+   * @param {object} parentTable - parent table
+   * @param {object} nestedFieldsObject - current nested table
+   */
+
   static parseNestedCollection(parentTable, nestedFieldsObject) {
     let parentTableName = dbBuilder.cutTableName(parentTable);
 
@@ -196,11 +262,26 @@ class dbBuilder {
       dbBuilder.tables.push(nestedTable);
     }
   }
+
+  /**
+   * extract from string which has '[' word before '['
+   *
+   * @param {object} table - current table
+   * @returns {object} table with changed name
+   */
   static cutTableName(table) {
     return table.name.indexOf("[") === -1
       ? table.name
       : table.name.slice(0, table.name.indexOf("["));
   }
+
+  /**
+   * create diagram
+   *
+   * @param {array} files - path to model files
+   *
+   */
+
   static createDiagram(files) {
     dbBuilder.tables = [];
     for (let i = 0; i < files.length; i++) {
@@ -236,9 +317,19 @@ class dbBuilder {
       message: "ER-diagram is created successfully"
     };
   }
+
+  /**
+   * get json object with tables data
+   * @returns {array} array of tables
+   */
+
   static getTables() {
     return JSON.parse(fs.readFileSync(`${projectPath}/Db/tables.json`));
   }
+  /**
+   * save coordinates of each table
+   * @param {array} coordinates - array of coordinates every table
+   */
   static saveCoords(coordinates) {
     fs.writeFile(
       path.join(projectPath, "../savedDiagram/coordinates.js"),
@@ -252,6 +343,12 @@ class dbBuilder {
     );
     return "Diagram is saved";
   }
+
+  /**
+   * get coordinates of each table
+   * @return {array} coordinates - array of coordinates every table
+   */
+
   static getCoordinates() {
     let coordinates;
     try {
@@ -263,25 +360,19 @@ class dbBuilder {
     }
     return coordinates;
   }
-
+  /**
+   * get coordinates from /savedDiagram and set them to /Db
+   */
   static editDiagram() {
     let tables = fs
       .readFileSync(path.join(projectPath, "../savedDiagram/tables.js"))
       .slice(13);
     let coords = fs
       .readFileSync(path.join(projectPath, "../savedDiagram/coordinates.js"))
-      .slice(18)
+      .slice(18);
 
-    fs.writeFile(
-      `${projectPath}/Db/coordinates.json`,
-      coords,
-      e => e
-    );
-    fs.writeFile(
-      `${projectPath}/Db/tables.json`,
-      tables,
-      e => e
-    );
+    fs.writeFile(`${projectPath}/Db/coordinates.json`, coords, e => e);
+    fs.writeFile(`${projectPath}/Db/tables.json`, tables, e => e);
     return {
       code: 200,
       message: ""
