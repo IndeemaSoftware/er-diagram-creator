@@ -17,7 +17,7 @@ window.onload = () => {
     let nodes = tables.map(table => createTable(table));
     nodes.forEach(node => diagram.add(node));
     tables.forEach((table, index) => {
-      table.node = nodes[index]; //додаю таблиці поле яке ссилається на його вузол
+      table.node = nodes[index];
     });
 
     insertChildrenNodes(tables);

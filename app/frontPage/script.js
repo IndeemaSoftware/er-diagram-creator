@@ -262,7 +262,7 @@ function editDiagram() {
  */
 function appendFileToList(listItem) {
   if (listItem.target) listItem = listItem.target.id;
-  if ([...list.children].some(child => child.id === listItem)) return; //список не повинен містити однакових файлів
+  if ([...list.children].some(child => child.id === listItem)) return; //list shouldn't has similar files
   if (listItem.endsWith(".js") || listItem.endsWith(".json")) {
     let a = document.createElement("a");
     a.setAttribute("class", "list-group-item list-group-item-action");

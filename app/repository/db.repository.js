@@ -149,12 +149,7 @@ class dbBuilder {
    */
   static appendMongooseDocument(table, fieldName, filedValue) {
     table.data.push({ fieldName, type: `table[ ${fieldName} ]` });
-
-    /* змінна tableName потрібна для того щоб в назві похідної таблиці було видно хто її батько
-      але якщо  батько теж похідний, то батька батька забираємо н-д props [ file [Song ]] - заміняємо на props [ file ]*/
-
     let tableName = dbBuilder.cutTableName(table);
-
     table.children.push({
       name: `${fieldName}[${tableName}]`,
       connection: [
@@ -246,7 +241,7 @@ class dbBuilder {
               R.path(["options", "ref"], nestedFieldsObject[keys][key])
             );
           } else if (!nestedFieldsObject[keys][key].instance) {
-            /* Виконується тодi коли у вкладеному об'єкті є ще вкладений об'єкт*/
+            /* it is executed when in nested object is another nested object */
             veryNested[key] = { ...nestedFieldsObject[keys][key] };
             delete nestedFieldsObject[keys][key];
             dbBuilder.parseNestedCollection(nestedTable, veryNested, keys);
