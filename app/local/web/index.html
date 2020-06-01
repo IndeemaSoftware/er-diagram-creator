@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Local project</title>
+    <link
+      rel="icon"
+      type="image/ico"
+      href="http://www.myiconfinder.com/uploads/iconsets/b100d7840c43e1782d60b71983f7f4da.png"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="./style.css" /> 
+  </head>
+  <body>
+    <div class="container">
+      <h3 class="text-center">Create diagram from local project</h3>
+      <form
+        class="form mt-2"
+        action="./"
+        enctype="application/zip"
+        method="post"
+        id="formZip"
+      >
+        <label for="sshKey" class="mb-2 mr-sm-2"
+          >Choose zip file of project</label
+        >
+        <input
+          type="file"
+          class="form-control-file mb-2 mr-sm-2"
+          id="projectZip"
+          name="projectZip"
+        />
+
+        <input type="submit" class="btn btn-secondary mb-2 mr-sm-2" />
+      </form>
+    <div id="fileSystem" style="display: none;">
+      <div
+        class="container"
+        id="root"
+        style=" height : 400px; width : 500px; margin : 50px auto; overflow-y:scroll; overflow-x : hidden;; cursor: default;"
+      ></div>
+      <div class="container">
+        <form class="form-inline mt-2" action="">
+          <label
+            for="extention"
+            class="mb-2 mr-sm-2"
+            style="font-size : 1.5; margin-bottom : 50px"
+          >
+            Select project</label
+          >
+          <input
+            type="text"
+            class="form-control mb-2 mr-sm-2"
+            name="project"
+            id="project"
+            value=""
+          />
+
+          <label
+            for="extention"
+            class="mb-2 mr-sm-2"
+            style="font-size : 1.5; margin-bottom : 50px"
+          >
+            Select all by extentions
+          </label>
+          <input
+            type="text"
+            class="form-control mb-2 mr-sm-2"
+            name="extention"
+            id="extention"
+            value=".model.js"
+          />
+          <button
+            type="button"
+            class="btn btn-secondary mb-2 mr-sm-2"
+            id="selectByExtention"
+          >
+            Select
+          </button>
+        </form>
+      </div> 
+
+      <div class="container">
+        <h3>
+          Selected models
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm mb-2 mr-sm-2"
+            id="deleteAll"
+          >
+            Delete all
+          </button>
+        </h3>
+         
+        <div class="list-group" id="list"></div>
+        <hr>
+        <label
+        for="projectName"
+        class="mb-2 mt-2 mr-sm-2"
+      >
+        Project name
+      </label>
+        <input
+        type="text"
+        class="form-control mb-2 mr-sm-2"
+        name="projectName"
+        id="projectName"
+        placeholder="Enter project name"
+        value=""
+      />
+        <button class="btn btn-secondary mb-2 mr-sm-2 mt-2" id="sendFiles">
+          Send files
+        </button>
+      </div>
+    </div> 
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.26.1/ramda.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    />
+    <link
+      rel="icon"
+      type="image/ico"
+      href="http://www.myiconfinder.com/uploads/iconsets/b100d7840c43e1782d60b71983f7f4da.png"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+    <title>Profile</title>
+  </head>
+  <body style="cursor: pointer">
+    <div class="container p-3" style="min-width : 900px">
+      <div class="row">
+        <div class="col-4">
+          <img src="./avatar.png" />
+        </div>
+
+        <div class="col-6">
+          <h2>
+            <span id="firstName">First</span> <span id="lastName">Last</span>
+          </h2>
+          <hr />
+          <div class="row">
+            <div class="col-6 nav-item dropdown">
+              <h5
+                class="nav-link dropdown-toggle text-left"
+                data-toggle="dropdown"
+                href="#"
+              >
+                Create diagram
+              </h5>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="/remote-connection">Remote Db</a>
+                <a class="dropdown-item" href="/local">Local project</a>
+                <a class="dropdown-item" href="/remote-repository"
+                  >Remote repository</a
+                >
+              </div>
+            </div>
+            <div class="col-6">
+              <h5
+                class="nav-link dropdown-toggle text-left"
+                data-toggle="dropdown"
+                href="#"
+              >
+                My diagrams <span id="countDiagrams"></span>
+              </h5>
+              <div class="dropdown-menu" id="projectsList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="btn-group mb-4" style="display: none" id="diagramMenu">
+        <button type="button" class="btn btn-secondary mr-sm-2 mt-3" id="save">
+          Save diagram
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary mr-sm-2 mt-3"
+          id="downloadProject"
+        >
+          Download diagram
+        </button>
+        <button
+          class="btn btn-secondary mr-sm-2 mt-3 dropdown-toggle"
+          type="button"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          Send diagram by email
+        </button>
+        <div class="dropdown-menu p-1">
+          <div class="form-group">
+            <input
+              type="text"
+              class="form-control"
+              id="userEmail"
+              placeholder="Mail to"
+            />
+          </div>
+
+          <button class="btn btn-primary" id="sendProjectByEmail">Send</button>
+        </div>
+        <button
+          type="email"
+          class="btn btn-secondary  mr-sm-2 mt-3"
+          id="deleteProject"
+        >
+          Delete diagram
+        </button>
+        <button
+          class="btn btn-secondary mr-sm-2 mt-3 dropdown-toggle"
+          type="button"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          Edit diagram name
+        </button>
+        <div class="dropdown-menu p-1">
+          <div class="form-group">
+            <input
+              type="text"
+              class="form-control"
+              id="newProjectName"
+              placeholder="Enter new name"
+            />
+          </div>
+
+          <button class="btn btn-primary" id="editDiagramName">Edit</button>
+        </div>
+        <button
+          type="button"
+          class="close p-3"
+          aria-label="Close"
+          id="closeDiagramMenu"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <h3 id="diagramName" class="text-center"></h3>
+    </div>
+    <div id="sample"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.26.1/ramda.js"></script>
+    <script src="https://unpkg.com/gojs/release/go-debug.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.26.1/ramda.js"></script>
+    <script src="./diagram.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>

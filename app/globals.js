@@ -1,4 +1,3 @@
-
 __dirname = "/home/yuriy/Projects/udb-v2-api";
 global.app_require = function(name) {
   return require(__dirname + "/app/" + name);

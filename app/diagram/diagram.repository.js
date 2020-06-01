@@ -1,8 +1,40 @@
 const fs = require("fs");
+const nodemailer = require("nodemailer");
+const mongoose = require("mongoose");
 const dataObjectParser = require("dataobject-parser");
 const R = require("ramda");
-const path = require("path");
-
+const { zip } = require("zip-a-folder");
+const {
+  deleteFolderRecursiveOrFile
+} = require(`${projectPath}/app/helpers.js`);
+const {
+  TEMP_COORDS,
+  COORDS_FOR_RESULT_DIAGRAM,
+  TABLES_FOR_RESULT_DIAGRAM,
+  TEMP_TABLES,
+  SCRIPT_TO_DRAW_DIAGRAM,
+  HTML_TO_DRAW_DIAGRAM,
+  USER_PROJECTS_PATH_TO_DOWNLOAD_FOLDER,
+  USER_PROJECTS_PATH_ZIP_FILE,
+  USER_FOLDER
+} = require(`${projectPath}/app/app.config.js`);
+const UserRepository = require(`${projectPath}/app/user/user.repository.js`);
+const {
+  getCollectionsNames,
+  getCollectionDocument,
+  generateSchema,
+  createModel
+} = require(`${projectPath}/app/remote/connection.repository.js`);
+/**
+ * FUnction which copy file
+ * @param {String} from
+ * @param {String} to
+ */
+const copyFile = (from, to) => {
+  try {
+    fs.writeFileSync(to, fs.readFileSync(from));
+  } catch (err) {}
+};
 class dbBuilder {
   /**
    * get all folders from user directory
@@ -10,7 +42,6 @@ class dbBuilder {
    * @param {string} path - path to user home directory
    * @returns {Array} array with pathes to every directory
    */
-
   static getHomeDirectories(path) {
     return fs
       .readdirSync(path)
@@ -28,7 +59,7 @@ class dbBuilder {
   static createFileSystem(path) {
     let filesSystem = [];
     try {
-      dbBuilder.getFiles(path, filesSystem);
+      dbBuilder.getFiles(`${path}/`, filesSystem);
       return filesSystem;
     } catch (e) {
       return e;
@@ -63,7 +94,7 @@ class dbBuilder {
         .map(elem => {
           let obj = {
             title: elem.name,
-            path: `${path}${elem.name}`,
+            path: `${path.slice(path.indexOf("tempFolder"))}${elem.name}`,
             folder: fs.lstatSync(`${path}/${elem.name}`).isDirectory(),
             children: []
           };
@@ -269,6 +300,55 @@ class dbBuilder {
       ? table.name
       : table.name.slice(0, table.name.indexOf("["));
   }
+  /**
+   * save JSON object with information about tables
+   * @param {string} path - destionation of file
+   * @returns {object} result of saving
+   */
+  static saveTablesData(path, extention) {
+    let data;
+    if (extention === ".js") {
+      data = `let tables = ${JSON.stringify(dbBuilder.tables)}`;
+    } else {
+      data = JSON.stringify(dbBuilder.tables);
+    }
+    return fs.writeFile(path, data, e => e);
+  }
+  /**
+   * Function which extract models and transfer
+   * @param {Array} files - array with pathes to model files
+   */
+
+  static createDiagramFromModels(files, userId, projectName) {
+    let models = files.map(file =>
+      dbBuilder.getModel(`${USER_FOLDER(userId)}/${file}`)
+    );
+    return dbBuilder.createDiagram(models, userId, projectName);
+  }
+  /**
+   * FUnction to create diagram from remote db
+   * @param {bject} db
+   * @param {String} userId
+   * @param {String} projectName
+   * @returns {Function} function which create diagram
+   */
+  static async createDiagramFromRemoteDb(db, userId, projectName) {
+    let collectionNames = await getCollectionsNames(db);
+    if (!collectionNames || !collectionNames.length)
+      throw { code: 400, message: "Incorrect Db name" };
+    const documents = await Promise.all(
+      collectionNames.map(collectionName => {
+        return getCollectionDocument(db, collectionName);
+      })
+    );
+    const schemas = documents.map(document => {
+      return generateSchema(document);
+    });
+    const models = schemas.map((schema, index) => {
+      return createModel(collectionNames[index], schema);
+    });
+    return await dbBuilder.createDiagram(models, userId, projectName);
+  }
 
   /**
    * create diagram
@@ -277,36 +357,23 @@ class dbBuilder {
    *
    */
 
-  static createDiagram(files) {
+  static async createDiagram(models, userId, projectName) {
     dbBuilder.tables = [];
-    for (let i = 0; i < files.length; i++) {
-      let model;
-      try {
-        model = require(files[i]);
-        dbBuilder.parseModel(model.schema, model.modelName, true, model);
-      } catch (e) {
-        return {
-          code: 500,
-          message: `Error in ${files[i]} file.\n1). Check if it is a model.\n2). If it has custom globals functions or variables - move them to globals.js`
-        };
-      }
-    }
+    models.forEach(model =>
+      dbBuilder.parseModel(model.schema, model.modelName, true, model)
+    );
     dbBuilder.appendDiscriminators(dbBuilder.futureLinks, dbBuilder.tables);
-    try {
-      fs.unlinkSync(`${projectPath}/Db/coordinates.json`);
-      fs.unlinkSync(`${projectPath}/savedDiagram/coordinates.js`);
-    } catch (e) {}
-
-    fs.writeFile(
-      `${projectPath}/Db/tables.json`,
-      JSON.stringify(dbBuilder.tables),
-      e => e
+    dbBuilder.cleanCoordinates([
+      TEMP_COORDS(userId, projectName),
+      COORDS_FOR_RESULT_DIAGRAM(userId, projectName)
+    ]);
+    dbBuilder.saveTablesData(TEMP_TABLES(userId, projectName));
+    dbBuilder.saveTablesData(
+      TABLES_FOR_RESULT_DIAGRAM(userId, projectName),
+      ".js"
     );
-    fs.writeFile(
-      path.join(projectPath, "../savedDiagram/tables.js"),
-      `let tables = ${JSON.stringify(dbBuilder.tables)}`,
-      e => e
-    );
+    await UserRepository.saveProject(userId, projectName);
+    models.forEach(dbBuilder.deleteUsedModel);
     return {
       code: 200,
       message: "ER-diagram is created successfully"
@@ -318,21 +385,21 @@ class dbBuilder {
    * @returns {array} array of tables
    */
 
-  static getTables() {
-    return JSON.parse(fs.readFileSync(`${projectPath}/Db/tables.json`));
+  static getTables(userId, projectName) {
+    return JSON.parse(fs.readFileSync(TEMP_TABLES(userId, projectName)));
   }
   /**
    * save coordinates of each table
    * @param {array} coordinates - array of coordinates every table
    */
-  static saveCoords(coordinates) {
+  static saveCoords(coordinates, userId, projectName) {
     fs.writeFile(
-      path.join(projectPath, "../savedDiagram/coordinates.js"),
+      COORDS_FOR_RESULT_DIAGRAM(userId, projectName),
       `let coordinates = ${JSON.stringify(coordinates)}`,
       e => e
     );
     fs.writeFile(
-      `${projectPath}/Db/coordinates.json`,
+      TEMP_COORDS(userId, projectName),
       JSON.stringify(coordinates),
       e => e
     );
@@ -344,34 +411,151 @@ class dbBuilder {
    * @return {array} coordinates - array of coordinates every table
    */
 
-  static getCoordinates() {
+  static getCoordinates(userId, projectName) {
     let coordinates;
     try {
       coordinates = JSON.parse(
-        fs.readFileSync(`${projectPath}/Db/coordinates.json`)
+        fs.readFileSync(TEMP_COORDS(userId, projectName))
       );
     } catch (e) {
       return null;
     }
     return coordinates;
   }
-  /**
-   * get coordinates from /savedDiagram and set them to /Db
-   */
-  static editDiagram() {
-    let tables = fs
-      .readFileSync(path.join(projectPath, "../savedDiagram/tables.js"))
-      .slice(13);
-    let coords = fs
-      .readFileSync(path.join(projectPath, "../savedDiagram/coordinates.js"))
-      .slice(18);
 
-    fs.writeFile(`${projectPath}/Db/coordinates.json`, coords, e => e);
-    fs.writeFile(`${projectPath}/Db/tables.json`, tables, e => e);
-    return {
-      code: 200,
-      message: ""
+  /**
+   * delete old coordinates for writing new ( in future)
+   * @param {[String]} paths - paths to files with saved coordinates
+   * @returns {array} - deleted files
+   */
+  static cleanCoordinates(paths) {
+    return paths.map(path => fs.unlink(path, err => err));
+  }
+  /**
+   * get model object by specified path
+   * @param {String} path - path to model
+   * @returns {array} - model object
+   */
+  static getModel(pathToModel) {
+    try {
+      return require(pathToModel);
+    } catch (err) {
+      throw {
+        code: 500,
+        message: `Error in ${pathToModel} file.\n1). Check if it is a model.\n2). If it has custom globals functions or variables - move them to globals.js`
+      };
+    }
+  }
+  /**
+   * Function which delete already used models to avoid OverwriteModelError
+   * @param {Object} model - mongoose model
+   */
+  static deleteUsedModel({ modelName }) {
+    delete mongoose.connection.models[modelName];
+  }
+  /**
+   * Function which create zip file from sevaed diagram folder
+   * @param {String} userId
+   * @param {String} projectName
+   * @returns {String} path to created file
+   */
+  static async createZip(userId, projectName) {
+    deleteFolderRecursiveOrFile(
+      USER_PROJECTS_PATH_TO_DOWNLOAD_FOLDER(userId, projectName)
+    );
+    deleteFolderRecursiveOrFile(
+      USER_PROJECTS_PATH_ZIP_FILE(userId, projectName)
+    );
+    copyFile(
+      COORDS_FOR_RESULT_DIAGRAM(userId, projectName),
+      `${USER_PROJECTS_PATH_TO_DOWNLOAD_FOLDER(
+        userId,
+        projectName
+      )}/coordinates.js`
+    );
+    copyFile(
+      TABLES_FOR_RESULT_DIAGRAM(userId, projectName),
+      `${USER_PROJECTS_PATH_TO_DOWNLOAD_FOLDER(userId, projectName)}/tables.js`
+    );
+    copyFile(
+      SCRIPT_TO_DRAW_DIAGRAM,
+      `${USER_PROJECTS_PATH_TO_DOWNLOAD_FOLDER(userId, projectName)}/script.js`
+    );
+    copyFile(
+      HTML_TO_DRAW_DIAGRAM,
+      `${USER_PROJECTS_PATH_TO_DOWNLOAD_FOLDER(userId, projectName)}/index.html`
+    );
+    await zip(
+      USER_PROJECTS_PATH_TO_DOWNLOAD_FOLDER(userId, projectName),
+      USER_PROJECTS_PATH_ZIP_FILE(userId, projectName)
+    );
+    return USER_PROJECTS_PATH_ZIP_FILE(userId, projectName);
+  }
+  /**
+   * FUnction which send diagram files by specified email
+   * @param {String} userId
+   * @param {String} projectName
+   * @param {String} mailTo
+   * @param {String} mailFrom
+   */
+  static async sendEmail(userId, projectName, mailTo, mailFrom) {
+    const userEmail = "yuriy.ivanyk@indeema.com";
+    const coordinatesFile = COORDS_FOR_RESULT_DIAGRAM(userId, projectName);
+    const userPassword = "gkhoroopcptomgur";
+    let attachments = [
+      {
+        filename: "index.html",
+        content: fs.createReadStream(HTML_TO_DRAW_DIAGRAM)
+      },
+      {
+        filename: "script.js.txt",
+        content: fs.createReadStream(HTML_TO_DRAW_DIAGRAM)
+      },
+      {
+        filename: "tables.js.txt",
+        content: fs.createReadStream(
+          TABLES_FOR_RESULT_DIAGRAM(userId, projectName)
+        )
+      }
+    ];
+    if (fs.existsSync(coordinatesFile)) {
+      attachments.push({
+        filename: "coordinates.js.txt",
+        content: fs.createReadStream(coordinatesFile)
+      });
+    }
+    nodemailer.createTransport(
+      `smtps://${userEmail}:${userPassword}@smtp.gmail.com`
+    );
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      auth: {
+        user: userEmail,
+        pass: userPassword
+      }
+    });
+
+    // setup e-mail data with unicode symbols
+    const mailOptions = {
+      from: mailFrom, // sender address
+      to: mailTo, // list of receivers
+      subject: `Er-diagram-creator, project - ${projectName}`,
+      attachments
     };
+
+    // send mail with defined transport object
+    return await new Promise((reslove, reject) => {
+      transporter.sendMail(mailOptions, function(error, info) {
+        if (error) {
+          reject({ code: 400, message: error });
+        }
+        reslove();
+      });
+    });
   }
 }
 dbBuilder.futureLinks = [];

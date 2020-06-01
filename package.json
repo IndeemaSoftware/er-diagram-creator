@@ -10,9 +10,20 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.19.2",
+    "cookie-parser": "^1.4.5",
     "dataobject-parser": "^1.2.1",
     "express": "^4.17.1",
-    "path": "^0.12.7",
-    "ramda": "^0.26.1"
+    "extract-zip-promise": "^1.0.5",
+    "find-process": "^1.4.3",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.7",
+    "multer": "^1.4.2",
+    "node-ssh": "^10.0.1",
+    "node-ssh-forward": "^0.6.3",
+    "nodemailer": "^6.4.8",
+    "ramda": "^0.26.1",
+    "simple-git": "^2.5.0",
+    "zip-a-folder": "0.0.12"
   }
 }

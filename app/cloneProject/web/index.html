@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>ERD-creator</title>
+    <title>Clone</title>
     <link
       rel="icon"
       type="image/ico"
@@ -14,38 +14,45 @@
       rel="stylesheet"
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     />
-    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./style.css" /> 
   </head>
   <body>
     <div class="container">
-      <p class="mt-2">If you want edit saved diagram, click - 
-        <button
-        type="button"
-        class="btn btn-secondary mb-2 mr-sm-2"
-        id="edit"
+      <h3 class="text-center">Create diagram from remote repository</h3>
+      <form
+        class="form mt-2"
+        id="formData"
       >
-        Edit
-      </button></p>
-      <form class="form-inline mt-2" action="">
-        <label for="path" class="mb-2 mr-sm-2"
-          >Enter full path to your project</label
+        <label for="urlToRoject" class="mb-2 mr-sm-2"
+          >Enter https url for clone project</label
         >
         <input
           type="text"
           class="form-control mb-2 mr-sm-2"
-          id="path"
-          name="path"
+          id="urlToRoject"
+          name="urlToRoject"
         />
-        <button
-          type="button"
-          class="btn btn-secondary mb-2 mr-sm-2"
-          id="sendPath"
-        >
-          Submit
-        </button>
+
+        <label for="userName" class="mb-2 mr-sm-2"
+        >Enter user name</label
+      >
+      <input
+        type="text"
+        class="form-control mb-2 mr-sm-2"
+        id="userName"
+        name="userName"
+      />
+      <label for="userPass" class="mb-2 mr-sm-2"
+      >Enter user password</label
+    >
+    <input
+      type="password"
+      class="form-control mb-2 mr-sm-2"
+      id="userPass"
+      name="userPass"
+    />
+        <input type="submit" class="btn btn-secondary mb-2 mr-sm-2" />
       </form>
-      <div class="list-group" id="homeDirectoriesList"></div>
-    </div>
     <div id="fileSystem" style="display: none;">
       <div
         class="container"
@@ -91,7 +98,7 @@
             Select
           </button>
         </form>
-      </div>
+      </div> 
 
       <div class="container">
         <h3>
@@ -104,13 +111,30 @@
             Delete all
           </button>
         </h3>
-
+         
         <div class="list-group" id="list"></div>
+        <hr>
+        <label
+        for="projectName"
+        class="mb-2 mt-2 mr-sm-2"
+      >
+        Project name
+      </label>
+        <input
+        type="text"
+        class="form-control mb-2 mr-sm-2"
+        name="projectName"
+        id="projectName"
+        placeholder="Enter project name"
+        value=""
+      />
         <button class="btn btn-secondary mb-2 mr-sm-2 mt-2" id="sendFiles">
           Send files
         </button>
       </div>
-    </div>
+    </div> 
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.26.1/ramda.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>

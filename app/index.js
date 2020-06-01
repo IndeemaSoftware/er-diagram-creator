@@ -1,58 +1,36 @@
 require("./globals");
-const express = require("express");
-const homedir = require("os").userInfo().homedir;
-const app = express();
 global.projectPath = __dirname;
+global.projectPath = __dirname.slice(0, -4);
+const express = require("express");
+const app = express();
 const bodyParser = require("body-parser");
-const DBRepository = require("./repository/db.repository.js");
-app.use(bodyParser.urlencoded({ extended: false }));
+const errorHandler = require(`${projectPath}/app/controller/errorHandler.js`);
+const generateFromRemoteDb = require(`${projectPath}/app/remote/index.js`);
+const diagram = require(`${projectPath}/app/diagram/index`);
+const generateFromLocalProject = require(`${projectPath}/app/local/index.js`);
+const auth = require(`${projectPath}/app/auth/auth.js`);
+const user = require(`${projectPath}/app/user/user.js`);
+const generateFromRemoteRepository = require("./cloneProject/index.js");
 app.use(bodyParser.json());
-app.use("/diagram/", express.static(`${__dirname}/Db`));
-app.use("/", express.static(`${__dirname}/frontPage`));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use("/", express.static(`${projectPath}/app/auth`));
+app.use("/auth", auth);
+app.use("/local", generateFromLocalProject);
+app.use("/remote-connection", generateFromRemoteDb);
+app.use("/remote-repository", generateFromRemoteRepository);
+app.use("/diagram", diagram);
+app.use("/user", user);
 
-app.get("/", function(req, res) {
-  res.sendFile(`${__dirname}/frontPage/index.html`);
-});
-
-app.get("/homedir/", (req, res) => {
-  let directories = DBRepository.getHomeDirectories(homedir);
-  res.send({ homedir, directories });
-});
-
-app.post("/create/fileSystem/", function(req, res) {
-  let result = DBRepository.createFileSystem(req.body.path);
-  res.send(result);
-});
-
-app.post("/create/diagram/", function(req, res) {
-  let result = DBRepository.createDiagram(req.body.paths);
-  res.send(result);
-});
-app.put("/edit/diagram/", function(req, res) {
-  let result = DBRepository.editDiagram();
-  res.send(result);
-});
-app.get("/diagram/", (req, res) => {
-  res.sendFile(`${__dirname}/Db/index.html`);
-});
-app.get("/tables/", (req, res) => {
-  let tables = DBRepository.getTables();
-  res.send(tables);
-});
-
-app.post("/save/coordinates/", function(req, res) {
-  DBRepository.saveCoords(req.body.coords);
-});
-app.get("/coordinates/", function(req, res) {
-  let coordinates = DBRepository.getCoordinates();
-  res.send(coordinates);
+app.get("/", function(req, res, next) {
+  res.sendFile(`${projectPath}/app/auth/web/index.html`);
 });
 
 app.listen(8081, function(err) {
   if (err) {
     console.log(err);
   } else {
-    console.log("Server start");
+    console.log("Server start on 8081");
   }
 });
+app.use(errorHandler);
 module.exports = app;

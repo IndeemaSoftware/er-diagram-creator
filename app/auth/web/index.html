@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="icon"
+      type="image/ico"
+      href="http://www.myiconfinder.com/uploads/iconsets/b100d7840c43e1782d60b71983f7f4da.png"
+    />
+    <title>Authorization</title>
+  </head>
+  <body>
+    <div class="container p-3">
+      <form action="/auth/signup" method="POST">
+        <div class="form-group">
+          <label for="signUpFirstName">First name</label>
+          <input
+            type="text"
+            class="form-control"
+            name="firstName"
+            placeholder="First name"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="lastName">Last name</label>
+          <input
+            type="text"
+            class="form-control"
+            name="lastName"
+            placeholder="Last name"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="signUpEmail">Email address</label>
+          <input
+            type="email"
+            class="form-control"
+            name="email"
+            aria-describedby="emailHelp"
+            placeholder="Enter email"
+            required
+          />
+          <small id="emailHelp" class="form-text text-muted"
+            >We'll never share your email with anyone else.</small
+          >
+        </div>
+        <div class="form-group">
+          <label for="signUpPassword">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            name="password"
+            placeholder="Password"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Sign up</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="location.href='https://gitlab.com/oauth/authorize?client_id=6bfc97dffeba886c2db256f16a4c2b5904e8064f11e18958a086c3d19e07e55e&redirect_uri=http://127.0.0.1:8081/auth/login/gitLab&response_type=code&scope=read_user'"
+        >
+          Login by gitLab
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="location.href='https://git.indeema.com/oauth/authorize?client_id=c46a3f11c82100b99c66d59d9207cda8a592fa160cfd7f061dff8a7de1490a9f&redirect_uri=http://127.0.0.1:8081/auth/login/indeemaGitLab&response_type=code&scope=read_user'"
+        >
+          Login by indeema gitLab
+        </button>
+      </form>
+    </div>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </body>
+</html>

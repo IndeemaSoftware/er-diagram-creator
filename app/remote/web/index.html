@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Remote DB</title>
+    <link
+      rel="icon"
+      type="image/ico"
+      href="http://www.myiconfinder.com/uploads/iconsets/b100d7840c43e1782d60b71983f7f4da.png"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+  </head>
+  <body class="p-3">
+    <div class="container">
+      <h3 class="text-center">Connect to Data Base</h3>
+      <form
+        class="form mt-2"
+        enctype="multipart/form-data"
+        method="post"
+        id="form"
+      >
+        <label for="remoteServer" class="mb-2 mr-sm-2"
+          >IP of remote server</label
+        >
+        <input
+          type="text"
+          class="form-control mb-2 mr-sm-2"
+          id="remoteServer"
+          value="3.21.231.11"
+          name="remoteServer"
+        />
+        <label for="remotePort" class="mb-2 mr-sm-2">DB port</label>
+        <input
+          type="text"
+          class="form-control mb-2 mr-sm-2"
+          id="remotePort"
+          name="remotePort"
+          value="27017"
+        />
+        <label for="sshKey" class="mb-2 mr-sm-2">SSH key</label>
+        <input
+          type="file"
+          class="form-control-file mb-2 mr-sm-2"
+          id="sshKey"
+          name="sshKey"
+        />
+        <label for="sshUser" class="mb-2 mr-sm-2">SSH user name</label>
+        <input
+          type="text"
+          class="form-control mb-2 mr-sm-2"
+          id="sshUser"
+          name="sshUser"
+          value="ec2-user"
+        />
+        <label for="dbName" class="mb-2 mr-sm-2">DB name</label>
+        <input
+          type="text"
+          class="form-control mb-2 mr-sm-2"
+          id="dbName"
+          name="dbName"
+          value="someDb"
+        />
+        <label for="dbUserName" class="mb-2 mr-sm-2">DB user name</label>
+        <input
+          type="text"
+          class="form-control mb-2 mr-sm-2"
+          id="dbUserName"
+          name="dbUserName"
+          value="dbName"
+        />
+        <label for="dbUserPass" class="mb-2 mr-sm-2">DB user password</label>
+        <input
+          type="text"
+          class="form-control mb-2 mr-sm-2"
+          id="dbUserPass"
+          name="dbUserPass"
+          value="somepass"
+        />
+        <label for="projectName" class="mb-2 mr-sm-2">Project Name</label>
+        <input
+          type="text"
+          class="form-control mb-2 mr-sm-2"
+          id="projectName"
+          name="projectName"
+          value="someProject"
+        />
+
+        <input
+          type="submit"
+          class="btn btn-secondary mb-2 mr-sm-2"
+          id="sendDbData"
+        />
+      </form>
+    </div>
+
+    <hr />
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.26.1/ramda.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
